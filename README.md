@@ -6,4 +6,4 @@ Usage
 
 Self-explainatory
 
-`logCodesign` `binary`
+`./logCodesign` `your app.(Demo.app)`
