@@ -8,23 +8,26 @@
 
 #import <Foundation/Foundation.h>
 #import "CodeSignTask.h"
+#import "iOSCodeSign.h"
 
 void checkVerifySign(const char *path, const char *argv)
 {
+    
     NSString * output = nil;
     NSString * processErrorDescription = nil;
     
     CodeSignTask *task = [[CodeSignTask alloc] init];
+
     BOOL success = [task runProcessAsAdministrator:@"/usr/bin/xcrun" withArguments:@[@"codesign",@"-v",[NSString stringWithUTF8String:argv]] output:&output errorDescription:&processErrorDescription];
     
     if (!success) // Process failed to run
     {
         // ...process output
-        NSLog(@"This is a not complete executable signature file");
+        NSLog(@"\n **** This is a not complete executable signature file **** \n");
     }
     else
     {
-        NSLog(@"This is a complete executable signature file");
+        NSLog(@"\n **** This is a complete executable signature file **** \n");
     }
 }
 
@@ -48,13 +51,16 @@ int main(int argc, const char * argv[])
     
     if (strlen(argv[1]) == 0)
     {
-        NSLog(@"logCodesign : Invalid path for app execute.");
+        NSLog(@"\n **** logCodesign : Invalid path for app execute. **** \n");
         return 0;
     }
     
-    NSLog(@"prepare reading app: [%s]", argv[1]);
+    NSLog(@"\n **** prepare reading app: [%s] **** \n", argv[1]);
     checkVerifySign(argv[0],argv[1]);
     lookSignAppForPath(argv[0],argv[1]);
+    
+    // iOS
+    CodeSign->bundleTeamIdentifier();
     
     return 0;
 }
