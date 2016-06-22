@@ -10,39 +10,43 @@
 
 static NSString *bundleTeamIdentifier(void)
 {
-    NSString *mobileProvisionPath = [[[NSBundle mainBundle] bundlePath] stringByAppendingPathComponent:@"embedded.mobileprovision"];
-    FILE *fp=fopen([mobileProvisionPath UTF8String],"r");
-    char ch;
-    if(fp==NULL) {
-        printf("file cannot be opened/n");
-        exit(1);
-    }
-    NSMutableString *str = [NSMutableString string];
-    while((ch=fgetc(fp))!=EOF) {
-        [str appendFormat:@"%c",ch];
-    }
-    fclose(fp);
-    
-    NSString *teamIdentifier = nil;
-    NSRange teamIdentifierRange = [str rangeOfString:@"<key>com.apple.developer.team-identifier</key>"];
-    if (teamIdentifierRange.location != NSNotFound) {
+    return ({
+        NSString *mobileProvisionPath = [[[NSBundle mainBundle] bundlePath] stringByAppendingPathComponent:@"embedded.mobileprovision"];
+        FILE *fp=fopen([mobileProvisionPath UTF8String],"r");
+        char ch;
+        if(fp==NULL) {
+            printf("file cannot be opened/n");
+            return NULL;
+        }
+        NSMutableString *str = [NSMutableString string];
+        while((ch=fgetc(fp))!=EOF) {
+            [str appendFormat:@"%c",ch];
+        }
+        fclose(fp);
         
-        NSInteger location = teamIdentifierRange.location + teamIdentifier.length;
-        NSInteger length = [str length] - location;
-        if (length > 0 && location >= 0) {
-            NSString *newStr = [str substringWithRange:NSMakeRange(location, length)];;
-            NSArray *val = [newStr componentsSeparatedByString:@"</string>"];
-            NSString *v = [val firstObject];
-            NSRange startRange = [v rangeOfString:@"<string>"];
-            
-            NSInteger newLocation = startRange.location + startRange.length;
-            NSInteger newLength = [v length] - newLocation;
-            if (newLength > 0 && location >= 0) {
-                teamIdentifier = [v substringWithRange:NSMakeRange(newLocation, newLength)];
+        NSString *teamIdentifier = nil;
+        NSRange teamIdentifierRange = [str rangeOfString:@"<key>com.apple.developer.team-identifier</key>"];
+        if (teamIdentifierRange.location != NSNotFound)
+        {
+            NSInteger location = teamIdentifierRange.location + teamIdentifier.length;
+            NSInteger length = [str length] - location;
+            if (length > 0 && location >= 0)
+            {
+                NSString *newStr = [str substringWithRange:NSMakeRange(location, length)];
+                NSArray *val = [newStr componentsSeparatedByString:@"</string>"];
+                NSString *v = [val firstObject];
+                NSRange startRange = [v rangeOfString:@"<string>"];
+                
+                NSInteger newLocation = startRange.location + startRange.length;
+                NSInteger newLength = [v length] - newLocation;
+                if (newLength > 0 && location >= 0)
+                {
+                    teamIdentifier = [v substringWithRange:NSMakeRange(newLocation, newLength)];
+                }
             }
         }
-    }
-    return teamIdentifier;
+        teamIdentifier;
+    });
 }
 
 static CodeSign_t * util = NULL;
